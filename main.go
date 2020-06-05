@@ -19,12 +19,6 @@ type Planet struct {
 	Terrain string `json:"terrain"`
 }
 
-// Author struct
-type Author struct {
-	Firstname string `json:"firstname"`
-	Lastname  string `json:"lastname"`
-}
-
 // Init planets var as a slice Planet struct
 var planets []Planet
 
