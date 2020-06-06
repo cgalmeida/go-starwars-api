@@ -11,7 +11,7 @@
 
 ```
 Mux [go get -u github.com/gorilla/mux]
-MongoDB []
+MongoDB [go get -u github.com/mongodb/mongo-go-driver/mongo]
 ```
 
 ### Installing
