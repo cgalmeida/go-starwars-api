@@ -1,5 +1,0 @@
-{
-    "Port": 8000,
-    "Static_Variable": "static",
-    "Connection_String":"mongodb://127.0.0.1:27017"
-}
