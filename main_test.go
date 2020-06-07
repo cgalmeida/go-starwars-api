@@ -15,6 +15,8 @@ func Router() *mux.Router {
 	router.HandleFunc("/api/planets", getPlanets).Methods("GET")
 	return router
 }
+
+//Get All Planets 
 func TestGetPlanets(t *testing.T) {
 	//fmt.Println("Test Planets")
 	request, _ := http.NewRequest("GET", "/api/planets", nil)
@@ -24,6 +26,7 @@ func TestGetPlanets(t *testing.T) {
 
 }
 
+//Get Single Planet By ID
 func TestGetPlanet(t *testing.T) {
 	//fmt.Println("Test Planet")
 	router := mux.NewRouter()
@@ -38,6 +41,7 @@ func TestGetPlanet(t *testing.T) {
 
 }
 
+//Get Single Planet By non Existing ID
 func TestGetNonExistingPlanet(t *testing.T) {
 	//fmt.Println("Test Planet")
 	router := mux.NewRouter()
@@ -52,6 +56,7 @@ func TestGetNonExistingPlanet(t *testing.T) {
 
 }
 
+//Create Planet
 func TestCreatePlanet(t *testing.T) {
 	//fmt.Println("Test CreatePlanet")
 	router := mux.NewRouter()
@@ -125,7 +130,7 @@ func TestDeleteExistingPlanet(t *testing.T) {
 
 }
 
-//Update Planet that has been already created
+//Update Existing Planet
 func TestUpdateExistingPlanet(t *testing.T) {
 	//fmt.Println("Test CreatePlanet")
 	router := mux.NewRouter()
@@ -147,8 +152,9 @@ func TestUpdateExistingPlanet(t *testing.T) {
 
 }
 
+//Update Non Existing Planet
 func TestUpdateNonExistingPlanet(t *testing.T) {
-	//fmt.Println("Test CreatePlanet")
+	//fmt.Println("Test UpdatePlanet")
 	router := mux.NewRouter()
 	router.HandleFunc("/api/planets/{id}", updatePlanet).Methods("PUT")
 
@@ -168,7 +174,7 @@ func TestUpdateNonExistingPlanet(t *testing.T) {
 
 }
 
-//Create Planet that has been already created
+//Try to Get Non Existing Planet By Name
 func TestGetNonExistingPlanetByName(t *testing.T) {
 	//fmt.Println("Test CreatePlanet")
 	router := mux.NewRouter()
@@ -183,7 +189,7 @@ func TestGetNonExistingPlanetByName(t *testing.T) {
 
 }
 
-//Create Planet that has been already created
+//Get Existing Planet By Name
 func TestGetExistingPlanetByName(t *testing.T) {
 	//fmt.Println("Test CreatePlanet")
 	router := mux.NewRouter()
