@@ -27,7 +27,7 @@ func getPlanets(w http.ResponseWriter, r *http.Request) {
 	//Connection mongoDB with helper class
 	collection := helper.ConnectDB()
 
-	// bson.M{},  we passed empty filter. So we want to get all data.
+	// bson.M{},  we passed empty filter to get all data.
 	cur, err := collection.Find(context.TODO(), bson.M{})
 
 	if err != nil {
@@ -35,14 +35,11 @@ func getPlanets(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Close the cursor once finished
-	/*A defer statement defers the execution of a function until the surrounding function returns.
-	simply, run cur.Close() process but after cur.Next() finished.*/
 	defer cur.Close(context.TODO())
 
 	for cur.Next(context.TODO()) {
 
-		// create a value into which the single document can be decoded
+		// create planet into which the single document can be decoded
 		var planet models.Planet
 		// & character returns the memory address of the following variable.
 		err := cur.Decode(&planet) // decode similar to deserialize process.
@@ -58,7 +55,8 @@ func getPlanets(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	json.NewEncoder(w).Encode(planets) // encode similar to serialize process.
+	json.NewEncoder(w).Encode(planets) // encode
+	w.WriteHeader(200)
 }
 
 func getPlanet(w http.ResponseWriter, r *http.Request) {
@@ -74,16 +72,18 @@ func getPlanet(w http.ResponseWriter, r *http.Request) {
 
 	collection := helper.ConnectDB()
 
-	// We create filter. If it is unnecessary to sort data for you, you can use bson.M{}
+	// create filter
 	filter := bson.M{"_id": id}
 	err := collection.FindOne(context.TODO(), filter).Decode(&planet)
 
 	if err != nil {
-		helper.GetError(err, w)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
 	json.NewEncoder(w).Encode(planet)
+	w.WriteHeader(200)
 }
 
 // Get single planet byName
@@ -96,15 +96,16 @@ func getPlanetByName(w http.ResponseWriter, r *http.Request) { // set header.
 
 	// string to primitive.ObjectID
 	name, _ := params["name"]
-	fmt.Println(name)
+	//	fmt.Println(name)
 	collection := helper.ConnectDB()
 
-	// We create filter. If it is unnecessary to sort data for you, you can use bson.M{}
+	// create filter
 	filter := bson.M{"name": name}
 	err := collection.FindOne(context.TODO(), filter).Decode(&planet)
 
 	if err != nil {
-		helper.GetError(err, w)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
@@ -117,15 +118,23 @@ func createPlanet(w http.ResponseWriter, r *http.Request) {
 
 	var planet models.Planet
 	//initializes planet info:
-
-	planet.Movies = strconv.Itoa(0) //TODO: Get movies info
+	planet.Movies = strconv.Itoa(0)
 
 	// we decode our body request params
 	_ = json.NewDecoder(r.Body).Decode(&planet)
 
 	//get planet infos from https://swapi.dev/:
 	fmt.Println(planet.Name)
+	var reqPlanet = planet.Name
 	planet = getPlanetInfo(planet.Name)
+
+	if planet.Name == "" || planet.Name != reqPlanet {
+
+		w.WriteHeader(http.StatusNotFound) // 404
+
+		w.Write([]byte("Planeta nao encontrado no Universo StarWars :("))
+		return
+	}
 
 	// connect db
 	collection := helper.ConnectDB()
@@ -134,7 +143,9 @@ func createPlanet(w http.ResponseWriter, r *http.Request) {
 	result, err := collection.InsertOne(context.TODO(), planet)
 
 	if err != nil {
-		helper.GetError(err, w)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+
 		return
 	}
 
@@ -176,10 +187,6 @@ func getPlanetInfo(planetName string) models.Planet {
 	json.Unmarshal(responseData, &responseObject)
 
 	for i := 0; i < len(responseObject.PlanetData); i++ {
-		fmt.Println(responseObject.PlanetData[i].Name)
-		fmt.Println(responseObject.PlanetData[i].Climate)
-		fmt.Println(responseObject.PlanetData[i].Terrain)
-		fmt.Println(len(responseObject.PlanetData[i].Movie))
 
 		planet.Name = responseObject.PlanetData[i].Name
 		planet.Climate = responseObject.PlanetData[i].Climate
@@ -223,7 +230,8 @@ func updatePlanet(w http.ResponseWriter, r *http.Request) {
 	err := collection.FindOneAndUpdate(context.TODO(), filter, update).Decode(&planet)
 
 	if err != nil {
-		helper.GetError(err, w)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
@@ -250,14 +258,13 @@ func deletePlanet(w http.ResponseWriter, r *http.Request) {
 	deleteResult, err := collection.DeleteOne(context.TODO(), filter)
 
 	if err != nil {
-		helper.GetError(err, w)
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
 		return
 	}
 
 	json.NewEncoder(w).Encode(deleteResult)
 }
-
-// var client *mongo.Client
 
 func main() {
 	//Init Router
